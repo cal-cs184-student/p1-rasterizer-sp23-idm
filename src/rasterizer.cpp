@@ -72,7 +72,7 @@ namespace CGL {
     Color color) {
     // TODO: Task 1: Implement basic triangle rasterization here, no supersampling
 
-      auto insideedge = [&](float x, float y) {
+      auto in_side_edge = [&](float x, float y) {
           float d0 = (y - y0) * (x1 - x0) - (x - x0) * (y1 - y0);
           float d1 = (y - y1) * (x2 - x1) - (x - x1) * (y2 - y1);
           float d2 = (y - y2) * (x0 - x2) - (x - x2) * (y0 - y2);
@@ -85,16 +85,16 @@ namespace CGL {
       int ymax = (int) ceil(max({ y0, y1, y2 }));
 
 
-      /*
+      
 
       for (int x = xmin; x < xmax; ++x) {
           for (int y = ymin; y < ymax; ++y) {
-              if (insideedge(x + .5, y + .5)) {
+              if (in_side_edge(x + .5, y + .5)) {
                   fill_pixel(x, y, color);
               }
           }
       }
-      */
+      
 
     
 
