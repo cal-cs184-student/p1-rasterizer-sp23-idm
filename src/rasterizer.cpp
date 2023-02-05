@@ -111,7 +111,37 @@ namespace CGL {
   {
     // TODO: Task 4: Rasterize the triangle, calculating barycentric coordinates and using them to interpolate vertex colors across the triangle
     // Hint: You can reuse code from rasterize_triangle
+      auto in_side_edge = [&](float x, float y) {
+          float d0 = (y - y0) * (x1 - x0) - (x - x0) * (y1 - y0);
+          float d1 = (y - y1) * (x2 - x1) - (x - x1) * (y2 - y1);
+          float d2 = (y - y2) * (x0 - x2) - (x - x2) * (y0 - y2);
+          return (d0 >= 0 && d1 >= 0 && d2 >= 0) || (d0 <= 0 && d1 <= 0 && d2 <= 0);
+      };
 
+      int xmin = (int)floor(min({ x0, x1, x2 }));
+      int ymin = (int)floor(min({ y0, y1, y2 }));
+      int xmax = (int)ceil(max({ x0, x1, x2 }));
+      int ymax = (int)ceil(max({ y0, y1, y2 }));
+
+      auto get_color = [&](float x, float y) {
+          float alpha;
+          float beta;
+          float gamma;
+          alpha = (-(x - x1) * (y2 - y1) + (y - y1) * (x2 - x1)) / (-(x0 - x1) * (y2 - y1) + (y0 - y1) * (x2 - x1));
+          beta = (-(x - x2) * (y0 - y2) + (y - y2) * (x0 - x2)) / (-(x1 - x2) * (y0 - y2) + (y1 - y2) * (x0 - x2));
+          gamma = 1 - alpha - beta;
+          return alpha * c0 + beta * c1 + gamma * c2;
+      };
+
+
+      for (int x = xmin; x < xmax; ++x) {
+          for (int y = ymin; y < ymax; ++y) {
+              if (in_side_edge(x + .5, y + .5)) {
+                  
+                  fill_pixel(x, y, get_color(x, y));
+              }
+          }
+      }
 
 
   }
