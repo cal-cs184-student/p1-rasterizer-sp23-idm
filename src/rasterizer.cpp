@@ -156,8 +156,28 @@ namespace CGL {
     // TODO: Task 6: Set the correct barycentric differentials in the SampleParams struct.
     // Hint: You can reuse code from rasterize_triangle/rasterize_interpolated_color_triangle
 
-
-
+      Vector2D p0(u0, v0);
+      Vector2D p1(u1, v1);
+      Vector2D p2(u2, v2);
+      Color c0;
+      Color c1;
+      Color c2;
+      if (this->psm == 0)
+      {
+          c0 = tex.sample_nearest(p0);
+          c1 = tex.sample_nearest(p1);
+          c2 = tex.sample_nearest(p2);
+      }
+      else
+      {
+          c0 = tex.sample_bilinear(p0);
+          c1 = tex.sample_bilinear(p1);
+          c2 = tex.sample_bilinear(p2);
+      }
+      //cout << c0 << c1 << c2;
+      rasterize_interpolated_color_triangle(x0, y0, c0,
+          x1, y1, c1,
+          x2, y2, c2);
 
   }
 

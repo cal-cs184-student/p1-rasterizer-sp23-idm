@@ -29,23 +29,33 @@ namespace CGL {
   Color Texture::sample_nearest(Vector2D uv, int level) {
     // TODO: Task 5: Fill this in.
     auto& mip = mipmap[level];
-
-
-
-
+    float u = uv[0] * mip.width;
+    float v = uv[1] * mip.height;
+    // fill in the nearest pixel
+    int sx = (int)floor(u);
+    int sy = (int)floor(v);
+    //cout << sx << sy;
+    return mip.get_texel(sx, sy);
     // return magenta for invalid level
-    return Color(1, 0, 1);
+    //return Color(1, 0, 1);
   }
 
   Color Texture::sample_bilinear(Vector2D uv, int level) {
     // TODO: Task 5: Fill this in.
     auto& mip = mipmap[level];
-
-
-
-
-    // return magenta for invalid level
-    return Color(1, 0, 1);
+    float u = uv[0] * mip.width;
+    float v = uv[1] * mip.height;
+    int sx = (int)u;
+    int sy = (int)v;
+    float alpha = u - sx;
+    float beta = v - sy;
+    Color d = mip.get_texel(sx, sy);
+    Color a = mip.get_texel(sx + 1, sy);
+    Color b = mip.get_texel(sx + 1, sy + 1);
+    Color c = mip.get_texel(sx, sy + 1);
+    Color e = a + alpha * (b + (-1) * a);
+    Color f = d + alpha * (c + (-1) * d);
+    return (e + beta * (f + (-1) * e));
   }
 
 
