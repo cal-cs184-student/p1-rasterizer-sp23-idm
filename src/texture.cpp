@@ -29,23 +29,62 @@ namespace CGL {
   Color Texture::sample_nearest(Vector2D uv, int level) {
     // TODO: Task 5: Fill this in.
     auto& mip = mipmap[level];
-
-
-
-
+    //cout << mip.width <<"  " << mip.height << endl;
+    float u = uv[0] * (mip.width - 1);
+    float v = uv[1] * (mip.height - 1);
+    // fill in the nearest pixel
+    int sx = (int)round(u);
+    int sy = (int)round(v);
+    //cout << sx << sy;
+    return mip.get_texel(sx, sy);
     // return magenta for invalid level
-    return Color(1, 0, 1);
   }
 
   Color Texture::sample_bilinear(Vector2D uv, int level) {
     // TODO: Task 5: Fill this in.
     auto& mip = mipmap[level];
-
-
-
-
-    // return magenta for invalid level
-    return Color(1, 0, 1);
+    float u = uv[0] * (mip.width - 1);
+    float v = uv[1] * (mip.height - 1);
+    int sx = (int)floor(u);
+    int sy = (int)floor(v);
+    float alpha = u - sx;
+    float beta = v - sy;
+    Color d = mip.get_texel(sx, sy);
+    Color a;
+    Color b;
+    Color c;
+    if (sx == mip.width - 1)
+    {
+        a = mip.get_texel(sx, sy);
+        if (sy == mip.height - 1)
+        {
+            b = mip.get_texel(sx, sy);
+            c = mip.get_texel(sx, sy);
+        }
+        else
+        {
+            b = mip.get_texel(sx, sy + 1);
+            c = mip.get_texel(sx, sy + 1);
+        }
+     
+    }
+    else
+    {
+        a = mip.get_texel(sx + 1, sy);
+        if (sy == mip.height - 1)
+        {
+            b = mip.get_texel(sx + 1, sy);
+            c = mip.get_texel(sx, sy);
+        }
+        else
+        {
+            b = mip.get_texel(sx + 1, sy + 1);
+            c = mip.get_texel(sx, sy + 1);
+        }
+    }
+    Color e = a + alpha * (b + (-1) * a);
+    Color f = d + alpha * (c + (-1) * d);
+    return (e + beta * (f + (-1) * e));
   }
 
 
