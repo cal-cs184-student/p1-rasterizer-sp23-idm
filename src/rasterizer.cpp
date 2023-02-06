@@ -156,6 +156,7 @@ namespace CGL {
     // TODO: Task 6: Set the correct barycentric differentials in the SampleParams struct.
     // Hint: You can reuse code from rasterize_triangle/rasterize_interpolated_color_triangle
 
+
       Vector2D p0(u0, v0);
       Vector2D p1(u1, v1);
       Vector2D p2(u2, v2);
@@ -164,20 +165,48 @@ namespace CGL {
       Color c2;
       if (this->psm == 0)
       {
-          c0 = tex.sample_nearest(p0);
-          c1 = tex.sample_nearest(p1);
-          c2 = tex.sample_nearest(p2);
+          c0 = tex.sample_nearest(p0, 0);
+          c1 = tex.sample_nearest(p1, 0);
+          c2 = tex.sample_nearest(p2, 0);
       }
       else
       {
-          c0 = tex.sample_bilinear(p0);
-          c1 = tex.sample_bilinear(p1);
-          c2 = tex.sample_bilinear(p2);
+          c0 = tex.sample_bilinear(p0, 0);
+          c1 = tex.sample_bilinear(p1, 0);
+          c2 = tex.sample_bilinear(p2, 0);
       }
       //cout << c0 << c1 << c2;
-      rasterize_interpolated_color_triangle(x0, y0, c0,
-          x1, y1, c1,
-          x2, y2, c2);
+      auto in_side_edge = [&](float x, float y) {
+          float d0 = (y - y0) * (x1 - x0) - (x - x0) * (y1 - y0);
+          float d1 = (y - y1) * (x2 - x1) - (x - x1) * (y2 - y1);
+          float d2 = (y - y2) * (x0 - x2) - (x - x2) * (y0 - y2);
+          return (d0 >= 0 && d1 >= 0 && d2 >= 0) || (d0 <= 0 && d1 <= 0 && d2 <= 0);
+      };
+
+      int xmin = (int)floor(min({ x0, x1, x2 }));
+      int ymin = (int)floor(min({ y0, y1, y2 }));
+      int xmax = (int)ceil(max({ x0, x1, x2 }));
+      int ymax = (int)ceil(max({ y0, y1, y2 }));
+
+      auto get_color = [&](float x, float y) {
+          float alpha;
+          float beta;
+          float gamma;
+          alpha = (-(x - x1) * (y2 - y1) + (y - y1) * (x2 - x1)) / (-(x0 - x1) * (y2 - y1) + (y0 - y1) * (x2 - x1));
+          beta = (-(x - x2) * (y0 - y2) + (y - y2) * (x0 - x2)) / (-(x1 - x2) * (y0 - y2) + (y1 - y2) * (x0 - x2));
+          gamma = 1 - alpha - beta;
+          return alpha * c0 + beta * c1 + gamma * c2;
+      };
+
+
+      for (int x = xmin; x < xmax; ++x) {
+          for (int y = ymin; y < ymax; ++y) {
+              if (in_side_edge(x + .5, y + .5)) {
+
+                  fill_pixel(x, y, get_color(x, y));
+              }
+          }
+      }
 
   }
 
