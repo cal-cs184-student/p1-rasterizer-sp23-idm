@@ -86,7 +86,6 @@ namespace CGL {
 
 
 		float stride = 1. / sqrt(sample_rate);
-		cout << stride << endl;
 		// TODO: Task 2: Update to implement super-sampled rasterization
 		int i;
 		for (int x = xmin; x < xmax; x++) {
@@ -174,29 +173,22 @@ namespace CGL {
 		int xmax = (int)ceil(max({ x0, x1, x2 }));
 		int ymax = (int)ceil(max({ y0, y1, y2 }));
 		Vector2D p0(u0, v0);
-		auto get_color_improved = [&](float x, float y) {
-			float alpha;
-			float beta;
-			float gamma;
-			float u;
-			float v;
-			alpha = (-(x - x1) * (y2 - y1) + (y - y1) * (x2 - x1)) / (-(x0 - x1) * (y2 - y1) + (y0 - y1) * (x2 - x1));
-			beta = (-(x - x2) * (y0 - y2) + (y - y2) * (x0 - x2)) / (-(x1 - x2) * (y0 - y2) + (y1 - y2) * (x0 - x2));
-			gamma = 1 - alpha - beta;
-			u = alpha * u0 + beta * u1 + gamma * u2;
-			v = alpha * v0 + beta * v1 + gamma * v2;
+
+		auto barycentric = [&](float x, float y) {
+			float alpha = (-(x - x1) * (y2 - y1) + (y - y1) * (x2 - x1)) / (-(x0 - x1) * (y2 - y1) + (y0 - y1) * (x2 - x1));
+			float beta = (-(x - x2) * (y0 - y2) + (y - y2) * (x0 - x2)) / (-(x1 - x2) * (y0 - y2) + (y1 - y2) * (x0 - x2));
+			float gamma = 1 - alpha - beta;
+			float u = alpha * u0 + beta * u1 + gamma * u2;
+			float v = alpha * v0 + beta * v1 + gamma * v2;
 			Vector2D P(u, v);
-			Color c;
-			if (this->psm == 0)
-			{
-				c = tex.sample_nearest(P);
-			}
-			else
-			{
-				c = tex.sample_bilinear(P);
-			}
-			return c;
+			return P;
 		};
+
+		auto get_color_improved = [&](float x, float y) {
+			SampleParams sp = {barycentric(x, y), barycentric(x+1., y), barycentric(x, y+1.), psm, lsm};
+			return tex.sample(sp);
+		};
+
 		float stride = 1. / sqrt(sample_rate);
 		int i;
 		for (int x = xmin; x < xmax; x++) {
