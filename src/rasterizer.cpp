@@ -100,6 +100,7 @@ namespace CGL {
 						i++;
 					}
 				}
+
 			}
 		}
 	}
@@ -134,11 +135,20 @@ namespace CGL {
 		};
 
 
-		for (int x = xmin; x < xmax; ++x) {
-			for (int y = ymin; y < ymax; ++y) {
-				if (in_side_edge(x + .5, y + .5)) {
-					fill_pixel(x, y, get_color(x, y));
+		float stride = 1. / sqrt(sample_rate);
+		int i;
+		for (int x = xmin; x < xmax; x++) {
+			for (int y = ymin; y < ymax; y++) {
+				i = sample_rate * (x + width * y);
+				for (float sx = 0.5 * stride; sx < 1; sx += stride) {
+					for (float sy = 0.5 * stride; sy < 1; sy += stride) {
+						if (in_side_edge(x + sx, y + sy)) {
+							sample_buffer[i] = get_color(x, y);
+						}
+						i++;
+					}
 				}
+
 			}
 		}
 	}
@@ -152,26 +162,6 @@ namespace CGL {
 		// TODO: Task 5: Fill in the SampleParams struct and pass it to the tex.sample function.
 		// TODO: Task 6: Set the correct barycentric differentials in the SampleParams struct.
 		// Hint: You can reuse code from rasterize_triangle/rasterize_interpolated_color_triangle
-
-
-		Vector2D p0(u0, v0);
-		Vector2D p1(u1, v1);
-		Vector2D p2(u2, v2);
-		Color c0;
-		Color c1;
-		Color c2;
-		if (this->psm == 0)
-		{
-			c0 = tex.sample_nearest(p0, 0);
-			c1 = tex.sample_nearest(p1, 0);
-			c2 = tex.sample_nearest(p2, 0);
-		}
-		else
-		{
-			c0 = tex.sample_bilinear(p0, 0);
-			c1 = tex.sample_bilinear(p1, 0);
-			c2 = tex.sample_bilinear(p2, 0);
-		}
 		auto in_side_edge = [&](float x, float y) {
 			float d0 = (y - y0) * (x1 - x0) - (x - x0) * (y1 - y0);
 			float d1 = (y - y1) * (x2 - x1) - (x - x1) * (y2 - y1);
@@ -183,24 +173,44 @@ namespace CGL {
 		int ymin = (int)floor(min({ y0, y1, y2 }));
 		int xmax = (int)ceil(max({ x0, x1, x2 }));
 		int ymax = (int)ceil(max({ y0, y1, y2 }));
-
-		auto get_color = [&](float x, float y) {
+		Vector2D p0(u0, v0);
+		auto get_color_improved = [&](float x, float y) {
 			float alpha;
 			float beta;
 			float gamma;
+			float u;
+			float v;
 			alpha = (-(x - x1) * (y2 - y1) + (y - y1) * (x2 - x1)) / (-(x0 - x1) * (y2 - y1) + (y0 - y1) * (x2 - x1));
 			beta = (-(x - x2) * (y0 - y2) + (y - y2) * (x0 - x2)) / (-(x1 - x2) * (y0 - y2) + (y1 - y2) * (x0 - x2));
 			gamma = 1 - alpha - beta;
-			return alpha * c0 + beta * c1 + gamma * c2;
+			u = alpha * u0 + beta * u1 + gamma * u2;
+			v = alpha * v0 + beta * v1 + gamma * v2;
+			Vector2D P(u, v);
+			Color c;
+			if (this->psm == 0)
+			{
+				c = tex.sample_nearest(P);
+			}
+			else
+			{
+				c = tex.sample_bilinear(P);
+			}
+			return c;
 		};
-
-
-		for (int x = xmin; x < xmax; ++x) {
-			for (int y = ymin; y < ymax; ++y) {
-				if (in_side_edge(x + .5, y + .5)) {
-
-					fill_pixel(x, y, get_color(x, y));
+		float stride = 1. / sqrt(sample_rate);
+		int i;
+		for (int x = xmin; x < xmax; x++) {
+			for (int y = ymin; y < ymax; y++) {
+				i = sample_rate * (x + width * y);
+				for (float sx = 0.5 * stride; sx < 1; sx += stride) {
+					for (float sy = 0.5 * stride; sy < 1; sy += stride) {
+						if (in_side_edge(x + sx, y + sy)) {
+							sample_buffer[i] = get_color_improved(x + sx, y + sy);
+						}
+						i++;
+					}
 				}
+
 			}
 		}
 
