@@ -32,8 +32,15 @@
 <div>
 
 <h2 align="middle">Overview</h2>
-<p style="line-height:200%">Give a high-level overview of what you implemented in this project. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the project.</p>
-
+<p style="line-height:200%">
+    In summary, we learned about how to rasterization and do texture mapping as well as different sampling methods: super sampling,
+    pixel sampling and level sampling to reduce aliasing effects. All these technologies contribute to the same purpose: wonderful visual
+    rendering!
+</p>
+<p style="line-height:200%">
+    The most interesting things in this project is to combine different anti-aliasing technologies and figure out the final result. It helps
+    us better understand the effect and trade-offs between these different methods and how to better combine these sampling methods together!
+</p>
 <h2 align="middle">Section I: Rasterization</h2>
 
 <h2 align="middle">Part 1: Rasterizing single-color triangles</h2>
@@ -250,17 +257,117 @@
         It is very easy to figure out that the bilinear method outperforms nearest method in the selected area, no matter the sampling rate
         is 1 or 16. The nearest method will create uncontinuous sampling result on the longtitude line but bilinear method will provide 
         smoother result. That is because texture sampling pattern is stretched and produce high frequency signal on texture places. So
-        using the nearest method will syntheszie jaggies. But after increasing sampling rate, both methods become better and bilinear method
+        using the nearest method will synthesize jaggies. But after increasing sampling rate, both methods become better and bilinear method
         still creates better results.
     </li>
 </ul>
 <h2 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h2>
 
+<h4>Explanation of level sampling:</h4>
+<ul>
+    <li style="line-height:200%">
+        There might be texture minification during texture mapping, which means many texture pixels can contribute to one image pixels. At this
+        time, we may have some aliasing results because of the high frequency in texture maps but low frequency signals in pixels' map. So at this
+        time, we can use sampling strategies on texture map to filter out high frequency signals and predict antialiasing results. This is level sampling.
+    </li>
+</ul>
 
+<h4>How we implemented it:</h4>
+<ul>
+    <li style="line-height:200%">
+        We implemented level sampling by using method <b>mipmap</b>. We first computed pre-filter versions of our texture map with different level D.
+        Every pixels on texture map should have their own level D. D decides the filter degree of the texture map. Given a single texture coordinate (u, v),
+        we estimate its corresponding level D by using its neighboring screen samples. It is very easy to understand that if the distance between these two
+        locations is large, that the level D should be large. After computing level D (D might not be integer), we can directly find the nearest integer
+        level D as its final level but we can also use interplolation to get the value by leveraging the surrounding 2 D levels to get final result.
+    </li>
+</ul>
 
-<h2 align="middle">Section III: Art Competition</h2>
+<h4>The tradeoffs between super sampling, pixel sampling, level sampling:</h4>
+<ul>
+    <li style="line-height:200%">
+        <b>super sampling</b>:
+        <ul>
+            <li>
+                time: low, need to do filter for every pixel in every case.
+            </li>
+            <li>
+                memory usage: high, need to sample buffer to store super sampling result.
+            </li>
+            <li>
+                antialiasing power: useful at nearly any cases.
+            </li>
+        </ul>
+    </li>
+    <li style="line-height:200%">
+        <b>pixel sampling</b>:
+        <ul>
+            <li>
+                time: so-so or fast, nearest is very fast but bilinear is not.
+            </li>
+            <li>
+                memory usage: low, just need to save some constants during computing.
+            </li>
+            <li>
+                antialiasing power: useful at texture magnification. Bilinear > nearest
+            </li>
+        </ul>
+    </li>
+    <li style="line-height:200%">
+        <b>level sampling</b>: 
+        <ul>
+            <li>
+                time: fast, due to the storage of pre-filtered texture maps.
+            </li>
+            <li>
+                memory usage: so-so, low consuming during running the algorithm but need to store the pre-filtered texture maps.
+            </li>
+            <li>
+                antialiasing power: useful at texture minification. Bilinear > nearest
+            </li>
+        </ul>
+    </li>
+</ul>
 
-<h2 align="middle">Part 7: Draw something interesting!</h2>
+<p style="line-height:200%">
+    Here is the four results: (figure 7):
+    <div align="center">
+        <table style="width=100%">
+            <tr>
+                <td>
+                    <img src="images/LzPn.png" align="middle" width="400px" />
+                    <figcaption align="center">L_ZERO and P_NEAREST</figcaption>
+                </td>
+                <td>
+                    <img src="images/LzPl.png" align="middle" width="400px" />
+                    <figcaption align="center">L_ZERO and P_LINEAR</figcaption>
+                </td>
+            </tr>
+            <br />
+            <tr>
+                <td>
+                    <img src="images/LnPn.png" align="middle" width="400px" />
+                    <figcaption align="center">L_NEAREST and P_NEAREST</figcaption>
+                </td>
+                <td>
+                    <img src="images/LnPl.png" align="middle" width="400px" />
+                    <figcaption align="center">L_NEAREST and P_LINEAR</figcaption>
+                </td>
+            </tr>
+        </table>
+        <figcaption align="center"><b>Figure 7. level sampling result</b></figcaption>
+    </div>
+    <h4>Explaination of our generated result:</h4>
+    <ul>
+        <li style="line-height:200%">
+            The picture is from a very famous game names <b>Witcher 3: Wild Hunt</b>.It is very easy to find some aliasing effects on L_ZERO and P_NEAREST,
+            such as on the Geralt's armors and his sword. L_ZERO and P_LINEAR and L_NEAREST and P_NEAREST is nice that produce nice result without so many
+            jaggies. But the result of L_NEAREST and P_LINEAR is too smooth that the character becomes unclear after zooming in.
+        </li>
+    </ul>
+    <h2 align="middle">Section III: Art Competition</h2>
 
-</body>
+    <h2 align="middle">Part 7: Draw something interesting!</h2>
+
+</p></body>
 </html>
