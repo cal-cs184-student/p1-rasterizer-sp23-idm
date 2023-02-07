@@ -6,267 +6,265 @@
 
 namespace CGL {
 
-  Color Texture::sample(const SampleParams& sp) {
-    // TODO: Task 6: Fill this in.
+	Color Texture::sample(const SampleParams& sp) {
+		// TODO: Task 6: Fill this in.
 
 
-// return magenta for invalid level
-    return Color(1, 0, 1);
-  }
+	// return magenta for invalid level
+		return Color(1, 0, 1);
+	}
 
-  float Texture::get_level(const SampleParams& sp) {
-    // TODO: Task 6: Fill this in.
-
-
-
-    return 0;
-  }
-
-  Color MipLevel::get_texel(int tx, int ty) {
-    return Color(&texels[tx * 3 + ty * width * 3]);
-  }
-
-  Color Texture::sample_nearest(Vector2D uv, int level) {
-    // TODO: Task 5: Fill this in.
-    auto& mip = mipmap[level];
-    //cout << mip.width <<"  " << mip.height << endl;
-    float u = uv[0] * (mip.width - 1);
-    float v = uv[1] * (mip.height - 1);
-    // fill in the nearest pixel
-    int sx = (int)round(u);
-    int sy = (int)round(v);
-    //cout << sx << sy;
-    return mip.get_texel(sx, sy);
-    // return magenta for invalid level
-  }
-
-  Color Texture::sample_bilinear(Vector2D uv, int level) {
-    // TODO: Task 5: Fill this in.
-    auto& mip = mipmap[level];
-    float u = uv[0] * (mip.width - 1);
-    float v = uv[1] * (mip.height - 1);
-    int sx = (int)floor(u);
-    int sy = (int)floor(v);
-    float alpha = u - sx;
-    float beta = v - sy;
-    Color d = mip.get_texel(sx, sy);
-    Color a;
-    Color b;
-    Color c;
-    if (sx == mip.width - 1)
-    {
-        a = mip.get_texel(sx, sy);
-        if (sy == mip.height - 1)
-        {
-            b = mip.get_texel(sx, sy);
-            c = mip.get_texel(sx, sy);
-        }
-        else
-        {
-            b = mip.get_texel(sx, sy + 1);
-            c = mip.get_texel(sx, sy + 1);
-        }
-     
-    }
-    else
-    {
-        a = mip.get_texel(sx + 1, sy);
-        if (sy == mip.height - 1)
-        {
-            b = mip.get_texel(sx + 1, sy);
-            c = mip.get_texel(sx, sy);
-        }
-        else
-        {
-            b = mip.get_texel(sx + 1, sy + 1);
-            c = mip.get_texel(sx, sy + 1);
-        }
-    }
-    Color e = a + alpha * (b + (-1) * a);
-    Color f = d + alpha * (c + (-1) * d);
-    return (e + beta * (f + (-1) * e));
-  }
+	float Texture::get_level(const SampleParams& sp) {
+		// TODO: Task 6: Fill this in.
 
 
 
-  /****************************************************************************/
+		return 0;
+	}
 
-  // Helpers
+	Color MipLevel::get_texel(int tx, int ty) {
+		return Color(&texels[tx * 3 + ty * width * 3]);
+	}
 
-  inline void uint8_to_float(float dst[3], unsigned char* src) {
-    uint8_t* src_uint8 = (uint8_t*)src;
-    dst[0] = src_uint8[0] / 255.f;
-    dst[1] = src_uint8[1] / 255.f;
-    dst[2] = src_uint8[2] / 255.f;
-  }
+	Color Texture::sample_nearest(Vector2D uv, int level) {
+		// TODO: Task 5: Fill this in.
+		auto& mip = mipmap[level];
+		float u = uv[0] * (mip.width - 1);
+		float v = uv[1] * (mip.height - 1);
+		// fill in the nearest pixel
+		int sx = (int)round(u);
+		int sy = (int)round(v);
+		return mip.get_texel(sx, sy);
+		// return magenta for invalid level
+	}
 
-  inline void float_to_uint8(unsigned char* dst, float src[3]) {
-    uint8_t* dst_uint8 = (uint8_t*)dst;
-    dst_uint8[0] = (uint8_t)(255.f * max(0.0f, min(1.0f, src[0])));
-    dst_uint8[1] = (uint8_t)(255.f * max(0.0f, min(1.0f, src[1])));
-    dst_uint8[2] = (uint8_t)(255.f * max(0.0f, min(1.0f, src[2])));
-  }
+	Color Texture::sample_bilinear(Vector2D uv, int level) {
+		// TODO: Task 5: Fill this in.
+		auto& mip = mipmap[level];
+		float u = uv[0] * (mip.width - 1);
+		float v = uv[1] * (mip.height - 1);
+		int sx = (int)floor(u);
+		int sy = (int)floor(v);
+		float alpha = u - sx;
+		float beta = v - sy;
+		Color d = mip.get_texel(sx, sy);
+		Color a;
+		Color b;
+		Color c;
+		if (sx == mip.width - 1)
+		{
+			a = mip.get_texel(sx, sy);
+			if (sy == mip.height - 1)
+			{
+				b = mip.get_texel(sx, sy);
+				c = mip.get_texel(sx, sy);
+			}
+			else
+			{
+				b = mip.get_texel(sx, sy + 1);
+				c = mip.get_texel(sx, sy + 1);
+			}
 
-  void Texture::generate_mips(int startLevel) {
+		}
+		else
+		{
+			a = mip.get_texel(sx + 1, sy);
+			if (sy == mip.height - 1)
+			{
+				b = mip.get_texel(sx + 1, sy);
+				c = mip.get_texel(sx, sy);
+			}
+			else
+			{
+				b = mip.get_texel(sx + 1, sy + 1);
+				c = mip.get_texel(sx, sy + 1);
+			}
+		}
+		Color e = a + alpha * (b + (-1) * a);
+		Color f = d + alpha * (c + (-1) * d);
+		return (e + beta * (f + (-1) * e));
+	}
 
-    // make sure there's a valid texture
-    if (startLevel >= mipmap.size()) {
-      std::cerr << "Invalid start level";
-    }
 
-    // allocate sublevels
-    int baseWidth = mipmap[startLevel].width;
-    int baseHeight = mipmap[startLevel].height;
-    int numSubLevels = (int)(log2f((float)max(baseWidth, baseHeight)));
 
-    numSubLevels = min(numSubLevels, kMaxMipLevels - startLevel - 1);
-    mipmap.resize(startLevel + numSubLevels + 1);
+	/****************************************************************************/
 
-    int width = baseWidth;
-    int height = baseHeight;
-    for (int i = 1; i <= numSubLevels; i++) {
+	// Helpers
 
-      MipLevel& level = mipmap[startLevel + i];
+	inline void uint8_to_float(float dst[3], unsigned char* src) {
+		uint8_t* src_uint8 = (uint8_t*)src;
+		dst[0] = src_uint8[0] / 255.f;
+		dst[1] = src_uint8[1] / 255.f;
+		dst[2] = src_uint8[2] / 255.f;
+	}
 
-      // handle odd size texture by rounding down
-      width = max(1, width / 2);
-      //assert (width > 0);
-      height = max(1, height / 2);
-      //assert (height > 0);
+	inline void float_to_uint8(unsigned char* dst, float src[3]) {
+		uint8_t* dst_uint8 = (uint8_t*)dst;
+		dst_uint8[0] = (uint8_t)(255.f * max(0.0f, min(1.0f, src[0])));
+		dst_uint8[1] = (uint8_t)(255.f * max(0.0f, min(1.0f, src[1])));
+		dst_uint8[2] = (uint8_t)(255.f * max(0.0f, min(1.0f, src[2])));
+	}
 
-      level.width = width;
-      level.height = height;
-      level.texels = vector<unsigned char>(3 * width * height);
-    }
+	void Texture::generate_mips(int startLevel) {
 
-    // create mips
-    int subLevels = numSubLevels - (startLevel + 1);
-    for (int mipLevel = startLevel + 1; mipLevel < startLevel + subLevels + 1;
-      mipLevel++) {
+		// make sure there's a valid texture
+		if (startLevel >= mipmap.size()) {
+			std::cerr << "Invalid start level";
+		}
 
-      MipLevel& prevLevel = mipmap[mipLevel - 1];
-      MipLevel& currLevel = mipmap[mipLevel];
+		// allocate sublevels
+		int baseWidth = mipmap[startLevel].width;
+		int baseHeight = mipmap[startLevel].height;
+		int numSubLevels = (int)(log2f((float)max(baseWidth, baseHeight)));
 
-      int prevLevelPitch = prevLevel.width * 3; // 32 bit RGB
-      int currLevelPitch = currLevel.width * 3; // 32 bit RGB
+		numSubLevels = min(numSubLevels, kMaxMipLevels - startLevel - 1);
+		mipmap.resize(startLevel + numSubLevels + 1);
 
-      unsigned char* prevLevelMem;
-      unsigned char* currLevelMem;
+		int width = baseWidth;
+		int height = baseHeight;
+		for (int i = 1; i <= numSubLevels; i++) {
 
-      currLevelMem = (unsigned char*)&currLevel.texels[0];
-      prevLevelMem = (unsigned char*)&prevLevel.texels[0];
+			MipLevel& level = mipmap[startLevel + i];
 
-      float wDecimal, wNorm, wWeight[3];
-      int wSupport;
-      float hDecimal, hNorm, hWeight[3];
-      int hSupport;
+			// handle odd size texture by rounding down
+			width = max(1, width / 2);
+			//assert (width > 0);
+			height = max(1, height / 2);
+			//assert (height > 0);
 
-      float result[3];
-      float input[3];
+			level.width = width;
+			level.height = height;
+			level.texels = vector<unsigned char>(3 * width * height);
+		}
 
-      // conditional differentiates no rounding case from round down case
-      if (prevLevel.width & 1) {
-        wSupport = 3;
-        wDecimal = 1.0f / (float)currLevel.width;
-      }
-      else {
-        wSupport = 2;
-        wDecimal = 0.0f;
-      }
+		// create mips
+		int subLevels = numSubLevels - (startLevel + 1);
+		for (int mipLevel = startLevel + 1; mipLevel < startLevel + subLevels + 1;
+			mipLevel++) {
 
-      // conditional differentiates no rounding case from round down case
-      if (prevLevel.height & 1) {
-        hSupport = 3;
-        hDecimal = 1.0f / (float)currLevel.height;
-      }
-      else {
-        hSupport = 2;
-        hDecimal = 0.0f;
-      }
+			MipLevel& prevLevel = mipmap[mipLevel - 1];
+			MipLevel& currLevel = mipmap[mipLevel];
 
-      wNorm = 1.0f / (2.0f + wDecimal);
-      hNorm = 1.0f / (2.0f + hDecimal);
+			int prevLevelPitch = prevLevel.width * 3; // 32 bit RGB
+			int currLevelPitch = currLevel.width * 3; // 32 bit RGB
 
-      // case 1: reduction only in horizontal size (vertical size is 1)
-      if (currLevel.height == prevLevel.height) {
-        //assert (currLevel.height == 1);
+			unsigned char* prevLevelMem;
+			unsigned char* currLevelMem;
 
-        for (int i = 0; i < currLevel.width; i++) {
-          wWeight[0] = wNorm * (1.0f - wDecimal * i);
-          wWeight[1] = wNorm * 1.0f;
-          wWeight[2] = wNorm * wDecimal * (i + 1);
+			currLevelMem = (unsigned char*)&currLevel.texels[0];
+			prevLevelMem = (unsigned char*)&prevLevel.texels[0];
 
-          result[0] = result[1] = result[2] = 0.0f;
+			float wDecimal, wNorm, wWeight[3];
+			int wSupport;
+			float hDecimal, hNorm, hWeight[3];
+			int hSupport;
 
-          for (int ii = 0; ii < wSupport; ii++) {
-            uint8_to_float(input, prevLevelMem + 3 * (2 * i + ii));
-            result[0] += wWeight[ii] * input[0];
-            result[1] += wWeight[ii] * input[1];
-            result[2] += wWeight[ii] * input[2];
-          }
+			float result[3];
+			float input[3];
 
-          // convert back to format of the texture
-          float_to_uint8(currLevelMem + (3 * i), result);
-        }
+			// conditional differentiates no rounding case from round down case
+			if (prevLevel.width & 1) {
+				wSupport = 3;
+				wDecimal = 1.0f / (float)currLevel.width;
+			}
+			else {
+				wSupport = 2;
+				wDecimal = 0.0f;
+			}
 
-        // case 2: reduction only in vertical size (horizontal size is 1)
-      }
-      else if (currLevel.width == prevLevel.width) {
-        //assert (currLevel.width == 1);
+			// conditional differentiates no rounding case from round down case
+			if (prevLevel.height & 1) {
+				hSupport = 3;
+				hDecimal = 1.0f / (float)currLevel.height;
+			}
+			else {
+				hSupport = 2;
+				hDecimal = 0.0f;
+			}
 
-        for (int j = 0; j < currLevel.height; j++) {
-          hWeight[0] = hNorm * (1.0f - hDecimal * j);
-          hWeight[1] = hNorm;
-          hWeight[2] = hNorm * hDecimal * (j + 1);
+			wNorm = 1.0f / (2.0f + wDecimal);
+			hNorm = 1.0f / (2.0f + hDecimal);
 
-          result[0] = result[1] = result[2] = 0.0f;
-          for (int jj = 0; jj < hSupport; jj++) {
-            uint8_to_float(input, prevLevelMem + prevLevelPitch * (2 * j + jj));
-            result[0] += hWeight[jj] * input[0];
-            result[1] += hWeight[jj] * input[1];
-            result[2] += hWeight[jj] * input[2];
-          }
+			// case 1: reduction only in horizontal size (vertical size is 1)
+			if (currLevel.height == prevLevel.height) {
+				//assert (currLevel.height == 1);
 
-          // convert back to format of the texture
-          float_to_uint8(currLevelMem + (currLevelPitch * j), result);
-        }
+				for (int i = 0; i < currLevel.width; i++) {
+					wWeight[0] = wNorm * (1.0f - wDecimal * i);
+					wWeight[1] = wNorm * 1.0f;
+					wWeight[2] = wNorm * wDecimal * (i + 1);
 
-        // case 3: reduction in both horizontal and vertical size
-      }
-      else {
+					result[0] = result[1] = result[2] = 0.0f;
 
-        for (int j = 0; j < currLevel.height; j++) {
-          hWeight[0] = hNorm * (1.0f - hDecimal * j);
-          hWeight[1] = hNorm;
-          hWeight[2] = hNorm * hDecimal * (j + 1);
+					for (int ii = 0; ii < wSupport; ii++) {
+						uint8_to_float(input, prevLevelMem + 3 * (2 * i + ii));
+						result[0] += wWeight[ii] * input[0];
+						result[1] += wWeight[ii] * input[1];
+						result[2] += wWeight[ii] * input[2];
+					}
 
-          for (int i = 0; i < currLevel.width; i++) {
-            wWeight[0] = wNorm * (1.0f - wDecimal * i);
-            wWeight[1] = wNorm * 1.0f;
-            wWeight[2] = wNorm * wDecimal * (i + 1);
+					// convert back to format of the texture
+					float_to_uint8(currLevelMem + (3 * i), result);
+				}
 
-            result[0] = result[1] = result[2] = 0.0f;
+				// case 2: reduction only in vertical size (horizontal size is 1)
+			}
+			else if (currLevel.width == prevLevel.width) {
+				//assert (currLevel.width == 1);
 
-            // convolve source image with a trapezoidal filter.
-            // in the case of no rounding this is just a box filter of width 2.
-            // in the general case, the support region is 3x3.
-            for (int jj = 0; jj < hSupport; jj++)
-              for (int ii = 0; ii < wSupport; ii++) {
-                float weight = hWeight[jj] * wWeight[ii];
-                uint8_to_float(input, prevLevelMem +
-                  prevLevelPitch * (2 * j + jj) +
-                  3 * (2 * i + ii));
-                result[0] += weight * input[0];
-                result[1] += weight * input[1];
-                result[2] += weight * input[2];
-              }
+				for (int j = 0; j < currLevel.height; j++) {
+					hWeight[0] = hNorm * (1.0f - hDecimal * j);
+					hWeight[1] = hNorm;
+					hWeight[2] = hNorm * hDecimal * (j + 1);
 
-            // convert back to format of the texture
-            float_to_uint8(currLevelMem + currLevelPitch * j + 3 * i, result);
-          }
-        }
-      }
-    }
-  }
+					result[0] = result[1] = result[2] = 0.0f;
+					for (int jj = 0; jj < hSupport; jj++) {
+						uint8_to_float(input, prevLevelMem + prevLevelPitch * (2 * j + jj));
+						result[0] += hWeight[jj] * input[0];
+						result[1] += hWeight[jj] * input[1];
+						result[2] += hWeight[jj] * input[2];
+					}
+
+					// convert back to format of the texture
+					float_to_uint8(currLevelMem + (currLevelPitch * j), result);
+				}
+
+				// case 3: reduction in both horizontal and vertical size
+			}
+			else {
+
+				for (int j = 0; j < currLevel.height; j++) {
+					hWeight[0] = hNorm * (1.0f - hDecimal * j);
+					hWeight[1] = hNorm;
+					hWeight[2] = hNorm * hDecimal * (j + 1);
+
+					for (int i = 0; i < currLevel.width; i++) {
+						wWeight[0] = wNorm * (1.0f - wDecimal * i);
+						wWeight[1] = wNorm * 1.0f;
+						wWeight[2] = wNorm * wDecimal * (i + 1);
+
+						result[0] = result[1] = result[2] = 0.0f;
+
+						// convolve source image with a trapezoidal filter.
+						// in the case of no rounding this is just a box filter of width 2.
+						// in the general case, the support region is 3x3.
+						for (int jj = 0; jj < hSupport; jj++)
+							for (int ii = 0; ii < wSupport; ii++) {
+								float weight = hWeight[jj] * wWeight[ii];
+								uint8_to_float(input, prevLevelMem +
+									prevLevelPitch * (2 * j + jj) +
+									3 * (2 * i + ii));
+								result[0] += weight * input[0];
+								result[1] += weight * input[1];
+								result[2] += weight * input[2];
+							}
+
+						// convert back to format of the texture
+						float_to_uint8(currLevelMem + currLevelPitch * j + 3 * i, result);
+					}
+				}
+			}
+		}
+	}
 
 }
