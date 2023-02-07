@@ -94,8 +94,8 @@ namespace CGL {
 				i = sample_rate * (x + width * y);
 				for (float sx = 0.5 * stride; sx < 1; sx += stride) {
 					for (float sy = 0.5 * stride; sy < 1; sy += stride) {
-						if (inside_edge(x + sx, y + sy)) { 
-							sample_buffer[i] = color; 
+						if (inside_edge(x + sx, y + sy)) {
+							sample_buffer[i] = color;
 						}
 						i++;
 					}

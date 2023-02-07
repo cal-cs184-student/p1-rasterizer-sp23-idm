@@ -1,0 +1,266 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184 Rasterizer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2018</h1>
+<h1 align="middle">Project 1: Rasterizer</h1>
+<h2 align="middle">Puyuan Yi, Haoda Li</h2>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p style="line-height:200%">Give a high-level overview of what you implemented in this project. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the project.</p>
+
+<h2 align="middle">Section I: Rasterization</h2>
+
+<h2 align="middle">Part 1: Rasterizing single-color triangles</h2>
+ 
+
+<p>We rasterized our triangles in the following method:</p>
+<ul>
+    <li style="line-height:200%">We wrote a function to judge whether a point is inside the triangle.  We utilized the <b>Three Line Tests</b> method that was introduced in our class.</li>
+    <li style="line-height:200%">We leveraged the given vertices to find the bounding box of the triangle and iterated all the points inside the bounding box. The sample positions are located at half-integer coordinates in screen space. Our algorithm is the same as the one that checks each sample within the bounding box of the triangle.</li>
+    <li style="line-height:200%">We then utilized the <b>fill pixel</b> function to fill in the pixels which are inside the triangle with their corresponding colors.</li>
+</ul>
+
+<p>Here is our generated result figure 1 for your reference:</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/part1.png" align="middle" width="500px"/>
+        <figcaption align="middle"><b>Figure 1. part 1 result</b></figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<h2 align="middle">Part 2: Antialiasing triangles</h2>
+<h4>Why is super sampling helpful?</h4>
+<ul>
+    <li style="line-height:200%">
+        There might be aliasing happening when we directly do rasterization, it will cause jaggies or moire pattern which will
+        decrease the quality of our rasterization. The aliases are created by insufficiently sampled high-frequency signals, two
+        high-frequency signals are indistinguishable at a given sampling rate. Supersampling can help us filter out high-frequency
+        signals by using a one pixel-box filter. This is the reason why super sampling is helpful.
+    </li>
+</ul>
+<h4>Our modifications</h4>
+<ul>
+    <li style="line-height:200%">
+        We leveraged a box filter inside one pixel and averaged the results as the pixel's final result. For every single pixels,
+        we divided the pixels into n small boxes, the n is the given sampling rate. We divided our x and y to sqrt(n) to get
+        the n boxes. Then we calculated the color information of these boxes. In this task, we judged it by whether the center of
+        the box is inside the triangle. The we filled our sample_buffer. After filling sample_buffer, we just counted the
+        average of every pixel to rgb_framebuffer_target and got our super sampling result.
+    </li>
+</ul>
+
+<p>Here is result on <b>basic/test4.svg</b> (Figure 2) for your reference:</p>
+
+<div align="center">
+    <table style="width=100%">
+        <tr>
+            <td>
+                <img src="images/2_1.png" align="left" width="400px" />
+                <figcaption align="center">1 sampling rate.</figcaption>
+            </td>
+            <td>
+                <img src="images/2_4.png" align="middle" width="400px" />
+                <figcaption align="center">4 sampling rate.</figcaption>
+            </td>
+            <td>
+                <img src="images/2_16.png" align="right" width="400px" />
+                <figcaption align="center">16 sampling rate.</figcaption>
+            </td>
+        </tr>
+    </table>
+    <figcaption align="middle"><b>Figure 2. part 2 result with different sampling rates</b></figcaption>
+</div>
+
+<h4>Explanation:</h4>
+<ul>
+    <li style="line-height:200%">
+        In this picture, their is a skinny triangle corner which means high frequency signals. So at the low sampling rate, the
+        aliasing effect is very obvious, you can even observe the jaggies with out zooming in, and the edge is broken. But with
+        the increasing of the sampling rate, the aliasing effect decreases and the edges become much more smooth and continuous.
+    </li>
+</ul>
+
+<h2 align="middle">Part 3: Transforms</h2>
+
+<p style="line-height:200%">
+    We made our cubeman model to do a very famous gesture in the last year's best game <b>Elden Ring</b>. The gesture name in
+    the game is called "the gesture of elden ring". Here is a screenshot from the game and our generated result (Figure 3) for your reference:
+</p>
+
+<div align="center">
+    <table style="width=100%">
+        <tr>
+            <td>
+                <img src="images/elden_ring.png" align="middle" width="400px" />
+            </td>
+            <td>
+                <img src="images/part3_new.png" align="middle" width="400px" />
+            </td>
+        </tr>
+    </table>
+    <figcaption align="middle"><b>Figure 3. game screenshot and our cubeman</b></figcaption>
+</div>
+
+<h4>What we did:</h4>
+<ul>
+    <li style="line-height:200%">
+        In order to realize the "the gesture of elden ring", it is very easy to figure out that we first need to rotate our arms
+        by a certain degree. In our experiment, first we changed our initial translation to help move our arms a little bit
+        higher, then we rotated +- 60 degree after the initial translation. After rotating the arms,
+        it is now time for us to rotate our short arms (hands). So we also rotated our hands by a certain degree and we changed
+        the translation to help us connect our torsos together!
+    </li>
+</ul>
+
+<h2 align="middle">Section II: Sampling</h2>
+
+<h2 align="middle">Part 4: Barycentric coordinates</h2>
+
+<h4>Explaination of Barycentric coordinates:</h4>
+<ul>
+    <li style="line-height:200%">
+        Suppose now we are going to do texture mapping and our meshes are triangle meshes
+        . Now we have the color information on the vertices and we also want to know the color information inside each triangle
+        mesh. Ideally we should have smoothly varying color across this surface and the color can be know from where the pixels
+        locate inside this triangle. Barycentric coordinate can help us do that! It calcuates the weight of color information on
+        the vertices and nicely interpolates the values among the surface! Here is figure 4 that can explain this:
+    </li>
+</ul>
+
+<div align="center">
+    <table style="width=100%">
+        <tr>
+            <td>
+                <img src="images/part4_1.png" align="middle" width="500px" />
+                <figcaption align="center"><b>Figure 4. Barycentric coordinate demo picture</b></figcaption>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<p>
+    You can easily notice that barycentric coordinates can help us get smooth color information inside the mesh! Here is the
+    result of <b>svg/basic/test7.svg</b> (figure 5) for your reference:
+</p>
+<div align="center">
+    <table style="width=100%">
+        <tr>
+            <td>
+                <img src="images/part4_2.png" align="middle" width="500px" />
+                <figcaption align="center"><b>Figure 5. result of svg/basic/test7.svg</b></figcaption>
+            </td>
+        </tr>
+    </table>
+</div>
+<h2 align="middle">Part 5: "Pixel sampling" for texture mapping</h2>
+
+<h4>Explaination of Pixel sampling:</h4>
+<ul>
+    <li style="line-height:200%">
+        Every pixels that we are going to do texture mapping have their corresponding locations on our texture map, for example
+        (u, v). But the location may not be integer (texture sampling pattern not rectilinear or isotropic), so we need to
+        find a method to get the color information by some interpolation methods. This can also be understood as a "texture
+        magnification" strategy.
+    </li>
+</ul>
+
+<h4>How we implement it:</h4>
+<ul>
+    <li style="line-height:200%">
+        For the nearest method, we directly use the <b>round()</b> function provided by C++ to help us to find the nearest sampling
+        point in the texture map and for bilinear, we find 4 nearest points (4 pixels) around the sampling place and use *lerp*
+        algorithm to get the final result.
+    </li>
+</ul>
+
+<h4>The difference between "nearest" and "bilinear":</h4>
+<ul>
+    <li style="line-height:200%">
+        The "nearest" method just uses the information from one pixel on the texture map and "bilinear" method uses four. So the
+        bilinear method will give us much more smooth sampling result than nearest method. But however, the computational time
+        for the bilinear method is higher than nearest method.
+    </li>
+</ul>
+<p style="line-height:200%">
+    Here is the four results and the order is "nearest 1 sampling rate", "nearest 16 sampling rate", "bilinear 1 sampling rate",
+    "bilinear 16 sampling rate" (figure 6):
+</p>
+<div align="center">
+    <table style="width=100%">
+        <tr>
+            <td>
+                <img src="images/n1.png" align="middle" width="400px" />
+                <figcaption align="center">nearest 1 sampling rate</figcaption>
+            </td>
+            <td>
+                <img src="images/b1.png" align="middle" width="400px" />
+                <figcaption align="center">bilinear 1 sampling rate</figcaption>
+            </td>
+        </tr>
+        <br />
+        <tr>
+            <td>
+                <img src="images/n2.png" align="middle" width="400px" />
+                <figcaption align="center">nearest 16 sampling rate</figcaption>
+            </td>
+            <td>
+                <img src="images/b2.png" align="middle" width="400px" />
+                <figcaption align="center">bilinear 16 sampling rate</figcaption>
+            </td>
+        </tr>
+    </table>
+    <figcaption align="center"><b>Figure 6. pixel sampling result</b></figcaption>
+</div>
+
+<h4>Comment on the differences:</h4>
+<ul>
+    <li style="line-height:200%">
+        It is very easy to figure out that the bilinear method outperforms nearest method in the selected area, no matter the sampling rate
+        is 1 or 16. The nearest method will create uncontinuous sampling result on the longtitude line but bilinear method will provide 
+        smoother result. That is because texture sampling pattern is stretched and produce high frequency signal on texture places. So
+        using the nearest method will syntheszie jaggies. But after increasing sampling rate, both methods become better and bilinear method
+        still creates better results.
+    </li>
+</ul>
+<h2 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h2>
+
+
+
+<h2 align="middle">Section III: Art Competition</h2>
+
+<h2 align="middle">Part 7: Draw something interesting!</h2>
+
+</body>
+</html>
