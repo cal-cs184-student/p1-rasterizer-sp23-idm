@@ -44,6 +44,8 @@ endif(WIN32)
 
 add_executable(draw ${APPLICATION_SOURCE})
 
+add_executable(extra "src/fractal_triangles.cpp")
+
 target_include_directories(draw PUBLIC src)
 
 set(CGL_INCLUDE_DIRS CGL/include CGL/deps/glew/include CGL/deps/glfw/include)
